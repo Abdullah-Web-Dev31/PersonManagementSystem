@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PeopleDataAccessLayar\PersonManagement.DAL.csproj" />
+  </ItemGroup>
+
 </Project>

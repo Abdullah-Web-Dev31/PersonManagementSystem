@@ -1,6 +1,6 @@
 ﻿namespace PersonManagement.DAL
 {
-    public class People
+    public class PeopleData
     {
 
     }

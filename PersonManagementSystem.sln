@@ -5,6 +5,10 @@ VisualStudioVersion = 17.14.36511.14 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonManagement.DAL", "PeopleDataAccessLayar\PersonManagement.DAL.csproj", "{47CE271D-7240-4CF7-95D7-A675F917D024}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonManagement.BLL", "PersonManagement.BLL\PersonManagement.BLL.csproj", "{962F02C9-481C-4943-A044-B02991DB31DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonManagement.API", "PersonManagement.API\PersonManagement.API.csproj", "{D0319685-C0FF-4CD5-A62D-847A35E696F1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{47CE271D-7240-4CF7-95D7-A675F917D024}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47CE271D-7240-4CF7-95D7-A675F917D024}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47CE271D-7240-4CF7-95D7-A675F917D024}.Release|Any CPU.Build.0 = Release|Any CPU
+		{962F02C9-481C-4943-A044-B02991DB31DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{962F02C9-481C-4943-A044-B02991DB31DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{962F02C9-481C-4943-A044-B02991DB31DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{962F02C9-481C-4943-A044-B02991DB31DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0319685-C0FF-4CD5-A62D-847A35E696F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0319685-C0FF-4CD5-A62D-847A35E696F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0319685-C0FF-4CD5-A62D-847A35E696F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0319685-C0FF-4CD5-A62D-847A35E696F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
