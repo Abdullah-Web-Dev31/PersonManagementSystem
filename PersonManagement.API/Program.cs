@@ -1,5 +1,12 @@
-var builder = WebApplication.CreateBuilder(args);
+using PersonManagement.DAL.Repositories;
+using PersonManagement.DAL;
 
+var builder = WebApplication.CreateBuilder(args);
+Console.WriteLine(builder.Environment.EnvironmentName);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string \'DefaultConnection\' was not found");
+builder.Services.AddScoped<PersonRepository>(_ => new PersonRepository(connectionString));
+builder.Services.AddScoped<PeopleData>();
 // Add services to the container.
 
 builder.Services.AddControllers();
