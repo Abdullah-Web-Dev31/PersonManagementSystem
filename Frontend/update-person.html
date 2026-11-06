@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تحديث بيانات شخص</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:32px 16px;font-family:Tahoma,Arial,sans-serif;background:#f4f6f9;color:#202938}
+.container{max-width:680px;margin:auto}
+header{margin-bottom:24px}
+h1{margin:0 0 8px;font-size:26px}
+.subtitle{margin:0;color:#687386;font-size:14px;line-height:1.7}
+.card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 4px 18px #14233c12;margin-bottom:18px}
+.field{margin-bottom:17px}
+label{display:block;margin-bottom:8px;font-size:14px;font-weight:bold}
+input{width:100%;padding:12px;border:1px solid #d8dee8;border-radius:8px;font-size:15px;outline:none}
+input:focus{border-color:#1677d2;box-shadow:0 0 0 3px #1677d21a}
+input:disabled{background:#f2f4f7;color:#7b8493}
+button{border:0;border-radius:8px;background:#1677d2;color:#fff;padding:12px 18px;font-size:14px;cursor:pointer}
+button:hover{background:#0f62b2}
+button:disabled{opacity:.6;cursor:wait}
+.search-row{display:flex;gap:10px}
+.search-row input{flex:1;min-width:0}
+.search-row button{white-space:nowrap}
+.update-button{width:100%;background:#d97706}
+.update-button:hover{background:#b65f05}
+.status{display:none;padding:12px 14px;border-radius:8px;margin-top:16px;font-size:14px;line-height:1.7;overflow-wrap:anywhere}
+.status.show{display:block}.status.error{background:#fdecec;color:#a12626}.status.success{background:#e9f8ef;color:#17663a}.status.info{background:#eaf3ff;color:#14508c}
+.form-section{display:none}.form-section.show{display:block}
+.note{font-size:12px;color:#687386;line-height:1.7;margin:12px 0 0}
+@media(max-width:520px){body{padding:22px 10px}.card{padding:18px}.search-row{flex-direction:column}.search-row button{width:100%}}
+</style>
+</head>
+<body>
+<main class="container">
+<header>
+<h1>تحديث بيانات شخص</h1>
+<p class="subtitle">ابحث باستخدام PersonID، ثم عدّل البيانات وأرسل طلب PUT إلى People API.</p>
+</header>
+
+<section class="card">
+<div class="field">
+<label for="personId">رقم الشخص (PersonID)</label>
+<div class="search-row">
+<input id="personId" type="number" min="1" step="1" placeholder="مثال: 1">
+<button id="loadButton" type="button">جلب البيانات</button>
+</div>
+</div>
+<p class="note">أولًا نجلب بيانات الشخص الحالي حتى لا تضطر إلى إدخالها من جديد.</p>
+<div id="loadStatus" class="status" role="status"></div>
+</section>
+
+<section id="formSection" class="card form-section">
+<form id="updateForm">
+<div class="field">
+<label for="firstName">الاسم الأول</label>
+<input id="firstName" type="text" maxlength="50" required>
+</div>
+<div class="field">
+<label for="lastName">اسم العائلة</label>
+<input id="lastName" type="text" maxlength="50" required>
+</div>
+<div class="field">
+<label for="countryID">رقم الدولة (CountryID)</label>
+<input id="countryID" type="number" min="1" step="1" required>
+</div>
+<button id="updateButton" class="update-button" type="submit">حفظ التعديلات</button>
+<p class="note">سيتم إرسال PersonID في رابط PUT وفي جسم الطلب ليتوافق مع PersonDTO الظاهر في Swagger.</p>
+<div id="updateStatus" class="status" role="status"></div>
+</form>
+</section>
+</main>
+
+<script>
+const API_BASE_URL = "https://localhost:7121/api/People";
+const personIdInput = document.getElementById("personId");
+const loadButton = document.getElementById("loadButton");
+const formSection = document.getElementById("formSection");
+const updateForm = document.getElementById("updateForm");
+const loadStatus = document.getElementById("loadStatus");
+const updateStatus = document.getElementById("updateStatus");
+let loadedPersonId = null;
+
+function showStatus(element, message, type) {
+    element.textContent = message;
+    element.className = `status show ${type}`;
+}
+function clearStatus(element) {
+    element.textContent = "";
+    element.className = "status";
+}
+function readPersonId() {
+    const id = Number(personIdInput.value);
+    if (!Number.isInteger(id) || id <= 0) {
+        showStatus(loadStatus, "أدخل PersonID صحيحًا أكبر من صفر.", "error");
+        return null;
+    }
+    return id;
+}
+
+async function loadPerson() {
+    const id = readPersonId();
+    if (id === null) return;
+
+    loadButton.disabled = true;
+    loadButton.textContent = "جاري الجلب...";
+    formSection.classList.remove("show");
+    clearStatus(updateStatus);
+    showStatus(loadStatus, "جاري جلب بيانات الشخص...", "info");
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/GetPersonByID/${encodeURIComponent(id)}`, {
+            method: "GET",
+            headers: { "Accept": "application/json" }
+        });
+
+        if (response.status === 404) throw new Error("لم يتم العثور على شخص بهذا الرقم.");
+        if (!response.ok) throw new Error(`فشل جلب البيانات: HTTP ${response.status}`);
+
+        const person = await response.json();
+        if (!person || Array.isArray(person)) throw new Error("استجابة API غير متوقعة.");
+
+        loadedPersonId = id;
+        document.getElementById("firstName").value = person.firstName ?? person.FirstName ?? "";
+        document.getElementById("lastName").value = person.lastName ?? person.LastName ?? "";
+        document.getElementById("countryID").value = person.countryID ?? person.CountryID ?? "";
+
+        formSection.classList.add("show");
+        showStatus(loadStatus, "تم جلب بيانات الشخص. يمكنك تعديلها الآن.", "success");
+    } catch (error) {
+        showStatus(loadStatus, `${error.message} تأكد أن API يعمل وأن CORS يسمح بالاتصال.`, "error");
+        console.error("Load person error:", error);
+    } finally {
+        loadButton.disabled = false;
+        loadButton.textContent = "جلب البيانات";
+    }
+}
+
+async function updatePerson(event) {
+    event.preventDefault();
+
+    if (loadedPersonId === null) {
+        showStatus(updateStatus, "اجلب بيانات الشخص أولًا.", "error");
+        return;
+    }
+
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const countryID = Number(document.getElementById("countryID").value);
+
+    if (!firstName || !lastName || !Number.isInteger(countryID) || countryID <= 0) {
+        showStatus(updateStatus, "تأكد من إدخال الاسم الأول واسم العائلة ورقم دولة صحيح.", "error");
+        return;
+    }
+
+    // The route uses personID; the DTO body also includes personID as shown in Swagger.
+    const personDTO = {
+        personID: loadedPersonId,
+        firstName,
+        lastName,
+        countryID
+    };
+
+    const updateButton = document.getElementById("updateButton");
+    updateButton.disabled = true;
+    updateButton.textContent = "جاري التحديث...";
+    showStatus(updateStatus, "يتم إرسال التعديلات...", "info");
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/Update/${encodeURIComponent(loadedPersonId)}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(personDTO)
+        });
+
+        const responseText = await response.text();
+        if (!response.ok) {
+            throw new Error(`فشل التحديث: HTTP ${response.status}. ${responseText}`);
+        }
+
+        showStatus(updateStatus, "تم تحديث بيانات الشخص بنجاح.", "success");
+    } catch (error) {
+        showStatus(updateStatus, `${error.message} تأكد أن API يعمل وأن CORS يسمح بالاتصال.`, "error");
+        console.error("Update person error:", error);
+    } finally {
+        updateButton.disabled = false;
+        updateButton.textContent = "حفظ التعديلات";
+    }
+}
+
+loadButton.addEventListener("click", loadPerson);
+personIdInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") loadPerson();
+});
+updateForm.addEventListener("submit", updatePerson);
+</script>
+</body>
+</html>
