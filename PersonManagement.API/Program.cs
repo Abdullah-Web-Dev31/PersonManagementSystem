@@ -2,6 +2,14 @@ using PersonManagement.DAL.Repositories;
 using PersonManagement.DAL;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCors(option =>
+{
+    option.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://127.0.0.1:5500").AllowAnyHeader().AllowAnyMethod();
+    });
+});
+
 Console.WriteLine(builder.Environment.EnvironmentName);
  DataAccessSettings._connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string \'DefaultConnection\' was not found");
@@ -14,7 +22,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
+app.UseCors("AllowFrontend");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
