@@ -1,5 +1,8 @@
 ﻿using PersonManagement.DAL;
+using System.ComponentModel;
 using System.Security.Cryptography.X509Certificates;
+
+
 
 namespace PersonManagement.BLL
 {
@@ -11,7 +14,7 @@ namespace PersonManagement.BLL
         public int CountryID { get; set; }
 
         public PersonDTO PDTO { get { return new PersonDTO(this.PersonID, this.FirstName, this.LastName, this.CountryID); } }
-       public enum  enMode { AddNew,Update};
+       public  enum  enMode { AddNew,Update};
         public enMode _Mode;
 
         public People(PersonDTO personDTO , enMode mode)
@@ -46,6 +49,10 @@ namespace PersonManagement.BLL
             }
         }
 
+        public static async Task <List<PersonDTO>>GetAll()
+        {
+            return  await PeopleData.GetAllPeople(); 
+        }
        async Task< bool> _AddNew()
         {
             this.PersonID = await PeopleData.AddNewPerson(PDTO);

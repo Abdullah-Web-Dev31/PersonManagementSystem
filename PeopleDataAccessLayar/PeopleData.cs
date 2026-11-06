@@ -105,6 +105,7 @@ namespace PersonManagement.DAL
                     {
                       await  conn.OpenAsync();
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@PersonID", PersonID);
                         //  object obj =  await cmd.ExecuteNonQueryAsync();
                         return await cmd.ExecuteNonQueryAsync()>0;
 
