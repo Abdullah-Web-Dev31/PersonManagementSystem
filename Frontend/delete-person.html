@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حذف شخص</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:32px 16px;font-family:Tahoma,Arial,sans-serif;background:#f4f6f9;color:#202938}
+.container{max-width:650px;margin:auto}
+header{margin-bottom:24px}
+h1{margin:0 0 8px;font-size:26px}
+.subtitle{margin:0;color:#687386;font-size:14px;line-height:1.7}
+.card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 4px 18px #14233c12}
+.field{margin-bottom:18px}
+label{display:block;margin-bottom:8px;font-size:14px;font-weight:bold}
+input{width:100%;padding:12px;border:1px solid #d8dee8;border-radius:8px;font-size:15px;outline:none}
+input:focus{border-color:#1677d2;box-shadow:0 0 0 3px #1677d21a}
+button{border:0;border-radius:8px;padding:12px 18px;font-size:14px;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+.delete-button{width:100%;background:#c93636;color:#fff}
+.delete-button:hover{background:#a92323}
+.status{display:none;padding:12px 14px;border-radius:8px;margin-top:16px;font-size:14px;line-height:1.7;overflow-wrap:anywhere}
+.status.show{display:block}.status.error{background:#fdecec;color:#a12626}.status.success{background:#e9f8ef;color:#17663a}.status.info{background:#eaf3ff;color:#14508c}
+.warning{background:#fff7e8;color:#8a5200;border:1px solid #f4dfb8;border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.8;margin-bottom:18px}
+@media(max-width:520px){body{padding:22px 10px}.card{padding:18px}}
+</style>
+</head>
+<body>
+<main class="container">
+<header>
+<h1>حذف شخص</h1>
+<p class="subtitle">أدخل رقم الشخص (PersonID) لحذفه من قاعدة البيانات.</p>
+</header>
+
+<section class="card">
+<div class="warning">
+<strong>تنبيه:</strong> الحذف عملية لا يمكن التراجع عنها من هذه الصفحة. تأكد من رقم الشخص قبل التأكيد.
+</div>
+
+<form id="deleteForm">
+<div class="field">
+<label for="personId">رقم الشخص (PersonID)</label>
+<input id="personId" type="number" min="1" step="1" required placeholder="مثال: 1">
+</div>
+<button id="deleteButton" class="delete-button" type="submit">حذف الشخص</button>
+</form>
+
+<div id="status" class="status" role="status"></div>
+</section>
+</main>
+
+<script>
+const API_BASE_URL = "https://localhost:7121/api/People/DeletePerson/";
+const form = document.getElementById("deleteForm");
+const personIdInput = document.getElementById("personId");
+const deleteButton = document.getElementById("deleteButton");
+const statusBox = document.getElementById("status");
+
+function showStatus(message, type) {
+    statusBox.textContent = message;
+    statusBox.className = `status show ${type}`;
+}
+
+form.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const personId = Number(personIdInput.value);
+    if (!Number.isInteger(personId) || personId <= 0) {
+        showStatus("أدخل PersonID صحيحًا أكبر من صفر.", "error");
+        personIdInput.focus();
+        return;
+    }
+
+    const confirmed = window.confirm(
+        `هل أنت متأكد أنك تريد حذف الشخص رقم ${personId}؟ لا يمكن التراجع عن هذا الإجراء.`
+    );
+    if (!confirmed) return;
+
+    deleteButton.disabled = true;
+    deleteButton.textContent = "جاري الحذف...";
+    showStatus("يتم إرسال طلب الحذف...", "info");
+
+    try {
+        const response = await fetch(`${API_BASE_URL}${encodeURIComponent(personId)}`, {
+            method: "DELETE",
+            headers: { "Accept": "text/plain, application/json" }
+        });
+
+        const responseText = await response.text();
+
+        if (response.status === 404) {
+            throw new Error(responseText || `لم يتم العثور على شخص بالرقم ${personId}.`);
+        }
+        if (!response.ok) {
+            throw new Error(`فشل الحذف: HTTP ${response.status}. ${responseText}`);
+        }
+
+        showStatus(responseText || `تم حذف الشخص رقم ${personId} بنجاح.`, "success");
+        form.reset();
+    } catch (error) {
+        showStatus(`${error.message} تأكد أن API يعمل وأن CORS يسمح بالاتصال.`, "error");
+        console.error("Delete person error:", error);
+    } finally {
+        deleteButton.disabled = false;
+        deleteButton.textContent = "حذف الشخص";
+    }
+});
+</script>
+</body>
+</html>
