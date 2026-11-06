@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>قائمة الأشخاص</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:32px 16px;font-family:Tahoma,Arial,sans-serif;background:#f4f6f9;color:#202938}
+.container{max-width:900px;margin:auto}.header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+h1{margin:0 0 8px;font-size:26px}.subtitle,.count{color:#687386;font-size:14px}
+button{border:0;border-radius:8px;background:#1677d2;color:white;padding:11px 18px;font-size:14px;cursor:pointer}
+button:hover{background:#0f62b2}button:disabled{opacity:.6;cursor:wait}
+.status{display:none;padding:12px 14px;border-radius:8px;margin-bottom:16px;font-size:14px;line-height:1.7}
+.status.show{display:block}.status.error{background:#fdecec;color:#a12626}.status.info{background:#eaf3ff;color:#14508c}
+.table-wrap{background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 18px #14233c12}
+table{width:100%;border-collapse:collapse}th,td{padding:15px 18px;text-align:right;border-bottom:1px solid #edf0f4}
+th{background:#f8fafc;color:#526075;font-size:13px}td{font-size:14px}tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#fafcff}.empty{padding:28px;text-align:center;color:#687386}
+@media(max-width:560px){body{padding:22px 10px}th,td{padding:12px 9px;font-size:12px}h1{font-size:22px}}
+</style>
+</head>
+<body>
+<main class="container">
+<header class="header">
+<div><h1>قائمة الأشخاص</h1><p class="subtitle">البيانات معروضة مباشرة من People API</p></div>
+<button id="refreshButton" type="button">تحديث البيانات</button>
+</header>
+<div id="status" class="status" role="status"></div>
+<section class="table-wrap">
+<table>
+<thead><tr><th>رقم الشخص</th><th>الاسم الأول</th><th>اسم العائلة</th><th>رقم الدولة</th></tr></thead>
+<tbody id="peopleTableBody"><tr><td colspan="4" class="empty">جاري تحميل البيانات...</td></tr></tbody>
+</table>
+</section>
+<p id="count" class="count"></p>
+</main>
+<script>
+const API_URL = "https://localhost:7121/api/People/GetAllPeople";
+const tableBody = document.getElementById("peopleTableBody");
+const statusBox = document.getElementById("status");
+const countText = document.getElementById("count");
+const refreshButton = document.getElementById("refreshButton");
+
+function showStatus(message,type){
+    statusBox.textContent=message;
+    statusBox.className=`status show ${type}`;
+}
+function hideStatus(){
+    statusBox.textContent="";
+    statusBox.className="status";
+}
+function renderPeople(people){
+    tableBody.replaceChildren();
+    if(!Array.isArray(people)||people.length===0){
+        const row=document.createElement("tr");
+        const cell=document.createElement("td");
+        cell.colSpan=4;cell.className="empty";cell.textContent="لا توجد بيانات لعرضها.";
+        row.appendChild(cell);tableBody.appendChild(row);countText.textContent="عدد الأشخاص: 0";return;
+    }
+    for(const person of people){
+        const row=document.createElement("tr");
+        const values=[
+            person.personID ?? person.PersonID,
+            person.firstName ?? person.FirstName,
+            person.lastName ?? person.LastName,
+            person.countryID ?? person.CountryID
+        ];
+        for(const value of values){
+            const cell=document.createElement("td");
+            cell.textContent=value ?? "-";
+            row.appendChild(cell);
+        }
+        tableBody.appendChild(row);
+    }
+    countText.textContent=`عدد الأشخاص: ${people.length}`;
+}
+async function loadPeople(){
+    refreshButton.disabled=true;refreshButton.textContent="جاري التحميل...";
+    showStatus("يتم الاتصال بالـ API...","info");countText.textContent="";
+    try{
+        const response=await fetch(API_URL,{method:"GET",headers:{"Accept":"application/json"}});
+        if(!response.ok)throw new Error(`فشل الطلب: HTTP ${response.status}`);
+        const people=await response.json();
+        renderPeople(people);hideStatus();
+    }catch(error){
+        tableBody.replaceChildren();
+        const row=document.createElement("tr");
+        const cell=document.createElement("td");
+        cell.colSpan=4;cell.className="empty";cell.textContent="تعذر تحميل البيانات.";
+        row.appendChild(cell);tableBody.appendChild(row);
+        showStatus(`${error.message}. تأكد أن الـ API يعمل، وأن شهادة HTTPS مقبولة، وأن CORS يسمح لصفحة HTML بالاتصال.`,"error");
+        countText.textContent="";console.error("GetAllPeople error:",error);
+    }finally{
+        refreshButton.disabled=false;refreshButton.textContent="تحديث البيانات";
+    }
+}
+refreshButton.addEventListener("click",loadPeople);
+loadPeople();
+</script>
+</body>
+</html>
