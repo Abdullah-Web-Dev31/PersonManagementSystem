@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Person Management System</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Tahoma,Arial,sans-serif;background:#f4f6f9;color:#202938}
+.container{max-width:1050px;margin:auto;padding:42px 20px}
+.hero{background:linear-gradient(135deg,#145da0,#1677d2);color:#fff;padding:34px;border-radius:18px;margin-bottom:28px;box-shadow:0 12px 30px #145da026}
+.eyebrow{font-size:12px;opacity:.85;letter-spacing:1px;margin:0 0 10px}
+h1{font-size:30px;margin:0 0 12px}
+.hero p{margin:0;line-height:1.8;color:#e7f1fc;font-size:14px;max-width:650px}
+.section-title{font-size:19px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{display:flex;align-items:flex-start;gap:16px;text-decoration:none;color:inherit;background:#fff;padding:22px;border-radius:13px;border:1px solid #e8edf3;box-shadow:0 4px 16px #14233c09;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}
+.card:hover{transform:translateY(-3px);box-shadow:0 9px 24px #14233c14;border-color:#b9d7f4}
+.icon{width:46px;height:46px;flex:0 0 46px;border-radius:12px;display:grid;place-items:center;background:#eaf3ff;color:#1769b1;font-size:22px;font-weight:bold}
+.card h2{font-size:16px;margin:2px 0 7px}
+.card p{font-size:13px;color:#687386;line-height:1.7;margin:0}
+.arrow{margin-right:auto;color:#8b98a9;font-size:20px;padding-top:2px}
+.footer{margin-top:26px;color:#8791a0;font-size:12px;text-align:center}
+@media(max-width:650px){.container{padding:24px 14px}.hero{padding:25px 21px}h1{font-size:25px}.grid{grid-template-columns:1fr}.card{padding:18px}}
+</style>
+</head>
+<body>
+<main class="container">
+<header class="hero">
+<p class="eyebrow">PERSON MANAGEMENT SYSTEM</p>
+<h1>إدارة الأشخاص</h1>
+<p>مرحبًا بك في نظام إدارة الأشخاص. اختر العملية التي تريد تنفيذها للوصول إلى بيانات الأشخاص وإدارتها.</p>
+</header>
+
+<section aria-labelledby="pagesTitle">
+<h2 class="section-title" id="pagesTitle">الصفحات والعمليات</h2>
+<div class="grid">
+<a class="card" href="people.html">
+<div class="icon">☷</div>
+<div><h2>قائمة الأشخاص</h2><p>عرض جميع الأشخاص المسجلين وبياناتهم.</p></div>
+<span class="arrow">←</span>
+</a>
+
+<a class="card" href="people-search.html">
+<div class="icon">⌕</div>
+<div><h2>البحث عن شخص</h2><p>البحث عن شخص محدد باستخدام PersonID.</p></div>
+<span class="arrow">←</span>
+</a>
+
+<a class="card" href="add-person.html">
+<div class="icon">＋</div>
+<div><h2>إضافة شخص</h2><p>إضافة سجل جديد إلى قاعدة البيانات.</p></div>
+<span class="arrow">←</span>
+</a>
+
+<a class="card" href="update-person.html">
+<div class="icon">✎</div>
+<div><h2>تحديث بيانات شخص</h2><p>جلب بيانات شخص وتعديل الاسم أو الدولة.</p></div>
+<span class="arrow">←</span>
+</a>
+
+<a class="card" href="delete-person.html">
+<div class="icon">⌫</div>
+<div><h2>حذف شخص</h2><p>حذف شخص باستخدام PersonID بعد التأكيد.</p></div>
+<span class="arrow">←</span>
+</a>
+</div>
+</section>
+
+<footer class="footer">Person Management System · Frontend</footer>
+</main>
+</body>
+</html>
