@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إضافة شخص</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:32px 16px;font-family:Tahoma,Arial,sans-serif;background:#f4f6f9;color:#202938}
+.container{max-width:650px;margin:auto}
+header{margin-bottom:24px}
+h1{margin:0 0 8px;font-size:26px}
+.subtitle{margin:0;color:#687386;font-size:14px}
+.card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 4px 18px #14233c12}
+.field{margin-bottom:18px}
+label{display:block;margin-bottom:8px;font-size:14px;font-weight:bold}
+input{width:100%;padding:12px;border:1px solid #d8dee8;border-radius:8px;font-size:15px;outline:none}
+input:focus{border-color:#1677d2;box-shadow:0 0 0 3px #1677d21a}
+input:disabled{background:#f2f4f7;color:#7b8493}
+button{border:0;border-radius:8px;background:#1677d2;color:#fff;padding:12px 20px;font-size:14px;cursor:pointer;width:100%}
+button:hover{background:#0f62b2}button:disabled{opacity:.6;cursor:wait}
+.note{font-size:12px;color:#687386;line-height:1.7;margin-top:7px}
+.status{display:none;padding:12px 14px;border-radius:8px;margin-top:16px;font-size:14px;line-height:1.7;overflow-wrap:anywhere}
+.status.show{display:block}.status.error{background:#fdecec;color:#a12626}.status.success{background:#e9f8ef;color:#17663a}.status.info{background:#eaf3ff;color:#14508c}
+@media(max-width:520px){body{padding:22px 10px}.card{padding:18px}}
+</style>
+</head>
+<body>
+<main class="container">
+<header>
+<h1>إضافة شخص جديد</h1>
+<p class="subtitle">أدخل بيانات الشخص لإضافته إلى قاعدة البيانات</p>
+</header>
+
+<section class="card">
+<form id="addPersonForm">
+<div class="field">
+<label for="firstName">الاسم الأول</label>
+<input id="firstName" name="firstName" type="text" maxlength="50" required placeholder="مثال: Mohammed">
+</div>
+
+<div class="field">
+<label for="lastName">اسم العائلة</label>
+<input id="lastName" name="lastName" type="text" maxlength="50" required placeholder="مثال: Ahmed">
+</div>
+
+<div class="field">
+<label for="countryID">رقم الدولة (CountryID)</label>
+<input id="countryID" name="countryID" type="number" min="1" step="1" required placeholder="مثال: 3">
+</div>
+
+<button id="submitButton" type="submit">إضافة الشخص</button>
+<p class="note">لا نطلب PersonID هنا؛ لأنه Auto Increment ويتم إنشاؤه تلقائيًا بواسطة SQL Server.</p>
+</form>
+<div id="status" class="status" role="status"></div>
+</section>
+</main>
+
+<script>
+const API_URL = "https://localhost:7121/api/People/AddNewPerson";
+const form = document.getElementById("addPersonForm");
+const submitButton = document.getElementById("submitButton");
+const statusBox = document.getElementById("status");
+
+function showStatus(message, type) {
+    statusBox.textContent = message;
+    statusBox.className = `status show ${type}`;
+}
+
+form.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const countryID = Number(document.getElementById("countryID").value);
+
+    if (!firstName || !lastName || !Number.isInteger(countryID) || countryID <= 0) {
+        showStatus("تأكد من إدخال الاسم الأول واسم العائلة ورقم دولة صحيح.", "error");
+        return;
+    }
+
+    // PersonID intentionally omitted because SQL Server generates it (IDENTITY).
+    const person = { firstName, lastName, countryID };
+
+    submitButton.disabled = true;
+    submitButton.textContent = "جاري الإضافة...";
+    showStatus("يتم إرسال البيانات إلى API...", "info");
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(person)
+        });
+
+        const responseText = await response.text();
+
+        if (!response.ok) {
+            throw new Error(`فشلت الإضافة (HTTP ${response.status}). ${responseText}`);
+        }
+
+        showStatus("تم إرسال طلب الإضافة بنجاح. يمكنك فتح صفحة قائمة الأشخاص للتأكد من ظهور السجل الجديد.", "success");
+        form.reset();
+    } catch (error) {
+        showStatus(`${error.message} تأكد أن API يعمل وأن CORS يسمح لصفحة HTML بالاتصال.`, "error");
+        console.error("Add person error:", error);
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "إضافة الشخص";
+    }
+});
+</script>
+</body>
+</html>
